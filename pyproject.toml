@@ -5,5 +5,6 @@ description = "Make tax auditors love crpyto."
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "dotenv>=0.9.9",
     "polars>=1.35.2",
 ]
