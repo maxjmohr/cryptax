@@ -1,0 +1,9 @@
+[project]
+name = "cryptax"
+version = "0.1.0"
+description = "Make tax auditors love crpyto."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "polars>=1.35.2",
+]
