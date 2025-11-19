@@ -1,5 +1,4 @@
 import os
-from posixpath import join
 
 import polars as pl
 from dotenv import load_dotenv
