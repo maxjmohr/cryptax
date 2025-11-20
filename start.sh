@@ -35,35 +35,6 @@ case "$OSTYPE" in
 esac
 echo "ℹ️ INF: Detected OS: $OS_TYPE"
 
-# Helper function to install packages using available package managers
-install_package() {
-  local package="$1"
-  if [ "$OS_TYPE" == "mac" ]; then
-    if command -v brew &> /dev/null; then
-      brew install "$package"
-    else
-      echo "❌ ERR: Homebrew is not installed. Please install Homebrew and retry."
-      exit 1
-    fi
-  elif [ "$OS_TYPE" == "linux" ]; then
-    if command -v apt-get &> /dev/null; then
-      sudo apt-get update && sudo apt-get install -y "$package"
-    elif command -v yum &> /dev/null; then
-      sudo yum install -y "$package"
-    else
-      echo "❌ ERR: Supported package manager not found. Please install $package manually."
-      exit 1
-    fi
-  elif [ "$OS_TYPE" == "windows" ]; then
-    if command -v winget &> /dev/null; then
-      winget install --id "$package" -e
-    else
-      echo "❌ ERR: winget not found. Please install $package manually."
-      exit 1
-    fi
-  fi
-}
-
 # Check for uv and install if missing
 if ! command -v uv &> /dev/null; then
     echo "ℹ️ INF: uv is not installed. Installing uv..."
