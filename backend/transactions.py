@@ -50,6 +50,9 @@ class TransactionData:
         # Calculate coin prices
         self.calculate_coin_prices()
 
+        # Allocate EUR transactions to fiat
+        self.allocate_eur_transactions_to_fiat()
+
         # Reorder columns and sort
         self.df = self.df.select(
             [
@@ -122,10 +125,10 @@ class TransactionData:
         The goal is to group these records together as 1 entry.
         """
         # Get the df and a copy to merge into the main df later
-        # The main df will filter out Operation="Transaction Related" and Coin="EUR"
+        # The main df will filter out Operation="Transaction Related" or "Binance Convert" and Coin="EUR"
         main_df = self.df.filter(
             ~(
-                (pl.col("Operation") == "Transaction Related")
+                (pl.col("Operation").is_in(["Transaction Related", "Binance Convert"]))
                 & (pl.col("Coin") == "EUR")
             )
         ).rename({"Change": "Change_Coin"})
@@ -133,7 +136,7 @@ class TransactionData:
         # The fiscal df will only contain Operation="Transaction Related" and Coin="EUR"
         fiscal_df = (
             self.df.filter(
-                (pl.col("Operation") == "Transaction Related")
+                (pl.col("Operation").is_in(["Transaction Related", "Binance Convert"]))
                 & (pl.col("Coin") == "EUR")
             )
             .select(
@@ -161,7 +164,7 @@ class TransactionData:
         # Assert that the length of Operation="Transaction Related" is same as filled Change_Fiscal
         assert (
             self.df.filter(
-                (pl.col("Operation") == "Transaction Related")
+                (pl.col("Operation").is_in(["Transaction Related", "Binance Convert"]))
                 & (pl.col("Coin") == "EUR")
             ).height
             == joined_df.filter(pl.col("Change_Fiscal").is_not_null()).height
@@ -177,7 +180,44 @@ class TransactionData:
             )
         )
 
+    def allocate_eur_transactions_to_fiat(self) -> None:
+        """Allocate some columns to the fiat columns
+        Coin -> Currency
+        Change_Coin -> Change_Fiat
+        """
+        self.df = self.df.with_columns(
+            # Coin -> Currency
+            pl.when(pl.col("Coin") == "EUR")
+            .then("Coin")
+            .otherwise(pl.col("Currency"))
+            .alias("Currency"),
+            # Change_Coin -> Change_Fiscal
+            pl.when(pl.col("Coin") == "EUR")
+            .then(pl.col("Change_Coin"))
+            .otherwise(pl.col("Change_Fiscal"))
+            .alias("Change_Fiscal"),
+            # Empty Coin
+            pl.when(pl.col("Coin") == "EUR")
+            .then(None)
+            .otherwise(pl.col("Coin"))
+            .alias("Coin"),
+            # Empty Change_Coin
+            pl.when(pl.col("Coin") == "EUR")
+            .then(None)
+            .otherwise(pl.col("Change_Coin"))
+            .alias("Change_Coin"),
+        )
+
+    def output_excel(self, file_path: str) -> None:
+        """Output the DataFrame to an Excel file.
+        Args:
+            file_path (str): The path to the output Excel file.
+        """
+        self.df.write_excel(file_path)
+
 
 if __name__ == "__main__":
     transaction_data = TransactionData()
     print(transaction_data.df)
+    # Export as xlsx
+    transaction_data.output_excel("output_transactions.xlsx")
