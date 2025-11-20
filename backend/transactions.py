@@ -12,7 +12,7 @@ except Exception:
     pass
 
 
-class TransactionData:
+class Transactions:
     # Class elements we expect
     __slots__: tuple = (
         "RAW_TRANSACTIONS_PATH",
@@ -217,7 +217,7 @@ class TransactionData:
 
 
 if __name__ == "__main__":
-    transaction_data = TransactionData()
+    transaction_data = Transactions()
     print(transaction_data.df)
     # Export as xlsx
     transaction_data.output_excel("output_transactions.xlsx")
