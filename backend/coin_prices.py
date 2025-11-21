@@ -1,7 +1,17 @@
+import os
 import time
 
 import requests
+from dotenv import load_dotenv
 from requests.models import Response
+
+# Load the environment variables (locally)
+dotenv_path: str = os.path.join(os.path.dirname(__file__), "./../.env")
+try:
+    load_dotenv(dotenv_path)
+except Exception:
+    print(f"No .env file found at {dotenv_path}, skipping...")
+    pass
 
 
 def fetch_live_coin_prices(coin: str, currency: str) -> float:
@@ -15,10 +25,22 @@ def fetch_live_coin_prices(coin: str, currency: str) -> float:
     coin = coin.lower()
     currency = currency.lower()
 
-    url: str = f"https://api.coingecko.com/api/v3/simple/price?ids={coin}&vs_currencies={currency}"
-    response: Response = requests.get(url=url)
+    url: str = "https://api.coingecko.com/api/v3/simple/price"
+    params: dict = {"ids": coin, "vs_currencies": currency}
 
-    time.sleep(1)  # To respect API rate limits
+    # If there is an API key, insert it
+    COINGECKO_API_KEY: str | None = os.environ.get("COINGECKO_API_KEY")
+
+    if COINGECKO_API_KEY:
+        params["x_cg_demo_api_key"] = COINGECKO_API_KEY
+        print(f"Fetching coin price for {coin} with CoinGecko API key")
+    else:
+        print(f"No CoinGecko API key found, fetching coin price for {coin} without key")
+
+    response: Response = requests.get(url, params=params)
+
+    # CoinGecko Demo rate limit: 30 requests/minute
+    time.sleep(30 / 60)
 
     if response.status_code != 200:
         raise ConnectionError(f"Failed to fetch prices for {coin} from CoinGecko.")
@@ -28,6 +50,7 @@ def fetch_live_coin_prices(coin: str, currency: str) -> float:
     if coin not in data:
         raise ValueError(f"Coin {coin} not found in CoinGecko response.")
 
+    print(f"Found current price for {coin}")
     price: float = data[coin][currency]
     return price
 
