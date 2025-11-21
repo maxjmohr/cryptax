@@ -1,0 +1,10 @@
+{
+  "ADA": "Cardano",
+  "ETH": "Ethereum",
+  "BTC": "Bitcoin",
+  "HBAR": "Hedera-Hashgraph",
+  "ETHW": "Ethereum-PoW-iou",
+  "XRP": "Ripple",
+  "SOL": "Solana",
+  "LINK": "Chainlink"
+}
