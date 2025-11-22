@@ -5,7 +5,6 @@ from functools import reduce
 
 import polars as pl
 from fetch_coin_prices import fetch_historical_prices_range
-from portfolio import Portfolio
 
 
 class LastYearPrices:
@@ -114,17 +113,13 @@ class LastYearPrices:
         ts: float = data.select("Price_Timestamp").to_numpy()[0]
 
         if ts in self.df["Price_Timestamp"].to_list():
-            # Existierende Zeile löschen
+            # Delete existing today's price
             self.df = self.df.filter(pl.col("Price_Timestamp") != ts)
 
-        # Neue Zeile anhängen
+        # Append new row (live price)
         self.df = pl.concat([self.df, data])
 
 
 if __name__ == "__main__":
     last_year_prices = LastYearPrices()
-    print(last_year_prices.df)
-    portfolio = Portfolio()
-    output: pl.DataFrame = portfolio.calculate_current_worth()
-    last_year_prices.update_todays_prices(output)
     print(last_year_prices.df)

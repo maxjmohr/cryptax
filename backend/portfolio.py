@@ -1,9 +1,10 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import polars as pl
 from fetch_coin_prices import fetch_live_coin_prices
+from last_year_prices import LastYearPrices
 from transactions import Transactions
 
 
@@ -152,11 +153,67 @@ class Portfolio:
         """
         self.df.write_excel(file_path)
 
+    def calculate_returns(self) -> None:
+        """Calculate returns for different periods: 1y, 6m, 3m, 1m, 1w"""
+        # Get target dates
+        today = datetime.today().date()
+        raw_periods: dict = {
+            "1w": today - timedelta(days=7),
+            "1m": today - timedelta(days=30),
+            "3m": today - timedelta(days=91),
+            "6m": today - timedelta(days=182),
+            "YtD": today.replace(month=1, day=1),
+            "1y": today
+            - timedelta(
+                days=364
+            ),  # 364 because maximum history for demo CoinGecko account
+        }
+
+        # Sort dates in dict based on difference to today
+        periods: dict = dict(
+            sorted(raw_periods.items(), key=lambda x: (today - x[1]).days)
+        )
+
+        # Prepare dataframes
+        df: pl.DataFrame = self.df
+        last_prices: pl.DataFrame = LastYearPrices().df
+
+        # Melt LastYearPrices: Coins as variables, Price as values
+        last_prices_long: pl.DataFrame = last_prices.unpivot(
+            index=["Price_Timestamp"],
+            on=[c for c in last_prices.columns if c != "Price_Timestamp"],
+            variable_name="Coin_Name",
+            value_name="Past_Price",
+        )
+
+        # Calculate returns for each period
+        for period_name, past_date in periods.items():
+            # Get Past_Price for each coin at this date
+            last_prices_long_period: pl.DataFrame = last_prices_long.filter(
+                pl.col("Price_Timestamp") == past_date
+            ).drop("Price_Timestamp")
+
+            # Join price
+            df_period: pl.DataFrame = df.join(
+                last_prices_long_period, on="Coin_Name", how="left"
+            )
+
+            # Calculate and store return
+            df: pl.DataFrame = df_period.with_columns(
+                (
+                    (pl.col("Coin_Price") - pl.col("Past_Price")) / pl.col("Past_Price")
+                ).alias(f"{period_name}_Return")
+            ).drop("Past_Price")
+
+        self.df = df
+
 
 if __name__ == "__main__":
     portfolio = Portfolio()
     last_year_prices_row = portfolio.calculate_current_worth()
     print(portfolio.df)
     print(last_year_prices_row)
+    portfolio.calculate_returns()
+    print(portfolio.df)
     # Export as xlsx
     portfolio.output_excel("output_portfolio.xlsx")
