@@ -113,14 +113,14 @@ def fetch_historical_prices_range(
     # Turn into dataframe
     df: pl.DataFrame = pl.DataFrame(
         {
-            "timestamp": [p[0] for p in prices],
-            "price": [p[1] for p in prices],
+            "Price_Timestamp": [p[0] for p in prices],
+            "Price": [p[1] for p in prices],
         }
     )
 
     df: pl.DataFrame = df.with_columns(
-        pl.col("timestamp").cast(pl.Datetime("ms")).alias("date")
-    ).select(["date", "price"])
+        pl.col("Price_Timestamp").cast(pl.Datetime("ms"))
+    ).select(["Price_Timestamp", "Price"])
 
     return df
 

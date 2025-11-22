@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 import polars as pl
-from coin_prices import fetch_live_coin_prices
+from fetch_coin_prices import fetch_live_coin_prices
 from transactions import Transactions
 
 
@@ -26,9 +26,6 @@ class Portfolio:
 
         # Map coin symbols to names
         self.map_coin_symbols_to_names()
-
-        # Calculate current worth
-        self.calculate_current_worth()
 
     def calculate_deposit(self) -> None:
         """Calculate the current deposit of fiat currency in the portfolio."""
@@ -64,6 +61,7 @@ class Portfolio:
             [
                 pl.sum("Change_Coin").alias("Total_Holdings"),
                 pl.sum("Change_Fiscal").abs().alias("Total_Fiat_Invested"),
+                pl.min("UTC_Time").alias("Invested_Since"),
             ]
         )
         self.df = grouped_df
@@ -88,8 +86,10 @@ class Portfolio:
             .alias("Coin_Name")
         )
 
-    def calculate_current_worth(self) -> None:
-        """Calculate the current worth of the holdings"""
+    def calculate_current_worth(self) -> pl.DataFrame:
+        """Calculate the current worth of the holdings
+        Also output a df row with the prices to attach to LastYearPrices object
+        """
         # Fetch current coin prices
         self.df = self.df.with_columns(
             pl.when(pl.col("Coin") == "EUR")
@@ -128,12 +128,22 @@ class Portfolio:
                 "Coin_Name",
                 "Total_Holdings",
                 "Total_Fiat_Invested",
+                "Invested_Since",
                 "Coin_Price",
                 "Current_Worth",
                 "Current_Return",
                 "Price_Timestamp",
             ]
         ).sort("Current_Worth", descending=True)
+
+        # Create df row output for LastYearPrices object
+        last_year_prices_row: pl.DataFrame = (
+            self.df.filter(pl.col("Coin") != "EUR")  # <-- hier filtern
+            .select(["Price_Timestamp", "Coin_Name", "Coin_Price"])
+            .pivot(on="Coin_Name", index="Price_Timestamp", values="Coin_Price")
+        )
+
+        return last_year_prices_row
 
     def output_excel(self, file_path: str) -> None:
         """Output the DataFrame to an Excel file.
@@ -145,6 +155,8 @@ class Portfolio:
 
 if __name__ == "__main__":
     portfolio = Portfolio()
+    last_year_prices_row = portfolio.calculate_current_worth()
     print(portfolio.df)
+    print(last_year_prices_row)
     # Export as xlsx
     portfolio.output_excel("output_portfolio.xlsx")
