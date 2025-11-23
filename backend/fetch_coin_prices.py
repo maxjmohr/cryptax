@@ -15,8 +15,9 @@ except Exception:
     print(f"No .env file found at {dotenv_path}, skipping...")
     pass
 
-# Try to fetch COINGECKO_API_KEY
+# Try to fetch env variables
 COINGECKO_API_KEY: str | None = os.environ.get("COINGECKO_API_KEY")
+PRINT_LOGS: bool = os.environ.get("PRINT_LOGS", "").lower() == "true"
 
 
 def fetch_live_coin_prices(coin: str, currency: str) -> float:
@@ -36,9 +37,13 @@ def fetch_live_coin_prices(coin: str, currency: str) -> float:
     # If there is an API key, insert it
     if COINGECKO_API_KEY:
         params["x_cg_demo_api_key"] = COINGECKO_API_KEY
-        print(f"Fetching coin price for {coin} with CoinGecko API key")
+        if PRINT_LOGS:
+            print(f"Fetching coin price for {coin} with CoinGecko API key")
     else:
-        print(f"No CoinGecko API key found, fetching coin price for {coin} without key")
+        if PRINT_LOGS:
+            print(
+                f"No CoinGecko API key found, fetching coin price for {coin} without key"
+            )
 
     response: Response = requests.get(url, params=params)
 
@@ -53,7 +58,8 @@ def fetch_live_coin_prices(coin: str, currency: str) -> float:
     if coin not in data:
         raise ValueError(f"Coin {coin} not found in CoinGecko response.")
 
-    print(f"Found current price for {coin}")
+    if PRINT_LOGS:
+        print(f"Found current price for {coin}")
     price: float = data[coin][currency]
     return price
 
@@ -84,15 +90,17 @@ def fetch_historical_prices_range(
     # If there is an API key, insert it
     if COINGECKO_API_KEY:
         params["x_cg_demo_api_key"] = COINGECKO_API_KEY
-        print(
-            f"Fetching coin prices for {coin} with CoinGecko API key "
-            f"from {start_date.strftime('%Y-%m-%d %H:%M')} to {end_date.strftime('%Y-%m-%d %H:%M')}"
-        )
+        if PRINT_LOGS:
+            print(
+                f"Fetching coin prices for {coin} with CoinGecko API key "
+                f"from {start_date.strftime('%Y-%m-%d %H:%M')} to {end_date.strftime('%Y-%m-%d %H:%M')}"
+            )
     else:
-        print(
-            f"No CoinGecko API key found, fetching coin prices for {coin} without key "
-            f"from {start_date.strftime('%Y-%m-%d %H:%M')} to {end_date.strftime('%Y-%m-%d %H:%M')}"
-        )
+        if PRINT_LOGS:
+            print(
+                f"No CoinGecko API key found, fetching coin prices for {coin} without key "
+                f"from {start_date.strftime('%Y-%m-%d %H:%M')} to {end_date.strftime('%Y-%m-%d %H:%M')}"
+            )
 
     response: Response = requests.get(url, params=params)
 
