@@ -4,7 +4,9 @@ from datetime import datetime, timedelta
 from functools import reduce
 
 import polars as pl
-from fetch_coin_prices import fetch_historical_prices_range
+from progress.spinner import PixelSpinner
+
+from .fetch_coin_prices import fetch_historical_prices_range
 
 
 class LastYearPrices:
@@ -36,6 +38,7 @@ class LastYearPrices:
         currency: str,
         start_date: datetime,
         end_date: datetime,
+        bar,
     ) -> pl.DataFrame:
         """Fetch last year prices for one coin and store as pl.DataFrame"""
         # Fetch prices
@@ -45,6 +48,9 @@ class LastYearPrices:
 
         # Rename price into coin_name
         data: pl.DataFrame = data.rename({"Price": coin_name})
+
+        # Update progress bar
+        bar.next()
 
         return data
 
@@ -77,15 +83,19 @@ class LastYearPrices:
         )
 
         # Load prices for each coin as dataframes
-        dfs: list[pl.DataFrame] = [
-            self.fetch_one_coin(
-                coin_name=coin,
-                currency="EUR",
-                start_date=last_year,
-                end_date=today,
-            )
-            for coin in sorted_coins
-        ]
+        with PixelSpinner(
+            f"Fetching historical coin prices ({last_year.strftime('%Y-%m-%d')} - {today.strftime('%Y-%m-%d')})… "
+        ) as bar:
+            dfs: list[pl.DataFrame] = [
+                self.fetch_one_coin(
+                    coin_name=coin,
+                    currency="EUR",
+                    start_date=last_year,
+                    end_date=today,
+                    bar=bar,
+                )
+                for coin in sorted_coins
+            ]
 
         # Left join of dataframes into one
         data: pl.DataFrame = reduce(

@@ -3,9 +3,11 @@ import os
 from datetime import datetime, timedelta
 
 import polars as pl
-from fetch_coin_prices import fetch_live_coin_prices
-from last_year_prices import LastYearPrices
-from transactions import Transactions
+from progress.spinner import PixelSpinner
+
+from .fetch_coin_prices import fetch_live_coin_prices
+from .last_year_prices import LastYearPrices
+from .transactions import Transactions
 
 
 class Portfolio:
@@ -92,17 +94,25 @@ class Portfolio:
         Also output a df row with the prices to attach to LastYearPrices object
         """
         # Fetch current coin prices
-        self.df = self.df.with_columns(
-            pl.when(pl.col("Coin") == "EUR")
-            .then(pl.col("Total_Fiat_Invested"))
-            .otherwise(
-                pl.col("Coin_Name").map_elements(
-                    lambda c: fetch_live_coin_prices(c, "EUR"),
-                    return_dtype=pl.Float64,
+        with PixelSpinner("Fetching live coin prices… ") as bar:
+
+            def wrapped_fetch(c):
+                # Wrapper to update progress bar
+                price = fetch_live_coin_prices(c, "EUR")
+                bar.next()
+                return price
+
+            self.df = self.df.with_columns(
+                pl.when(pl.col("Coin") == "EUR")
+                .then(pl.col("Total_Fiat_Invested"))
+                .otherwise(
+                    pl.col("Coin_Name").map_elements(
+                        wrapped_fetch,
+                        return_dtype=pl.Float64,
+                    )
                 )
+                .alias("Coin_Price")
             )
-            .alias("Coin_Price")
-        )
 
         # Calculate current worth
         self.df = self.df.with_columns(
@@ -171,7 +181,7 @@ class Portfolio:
 
         # Sort dates in dict based on difference to today
         periods: dict = dict(
-            sorted(raw_periods.items(), key=lambda x: (today - x[1]).days)
+            sorted(raw_periods.items(), key=lambda x: (today - x[1]).days, reverse=True)
         )
 
         # Prepare dataframes
