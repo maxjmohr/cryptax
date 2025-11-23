@@ -23,7 +23,9 @@ export PYTHONPATH="$SCRIPT_DIR"  # Set the project root as PYTHONPATH
 source "$SCRIPT_DIR/.env"
 
 # Print current script directory
-echo "ℹ️ INF: Current script directory: $SCRIPT_DIR"
+echo "🛠️ CONFIG: Current script directory: $SCRIPT_DIR"
+echo "🛠️ CONFIG: HIDE_CRITICAL_VALUES = $HIDE_CRITICAL_VALUES"
+echo "🛠️ CONFIG: PRINT_LOGS = $PRINT_LOGS"
 
 # Detect OS type
 OS_TYPE="unknown"
@@ -33,7 +35,8 @@ case "$OSTYPE" in
   cygwin*|msys*|win32*) OS_TYPE="windows" ;;
   *)        echo "❌ ERR: Unsupported OS: $OSTYPE"; exit 1 ;;
 esac
-echo "ℹ️ INF: Detected OS: $OS_TYPE"
+echo "🛠️ CONFIG: Detected OS: $OS_TYPE"
+echo
 
 # Check for uv and install if missing
 if ! command -v uv &> /dev/null; then

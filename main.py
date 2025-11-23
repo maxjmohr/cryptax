@@ -1,3 +1,4 @@
+import subprocess
 import sys
 
 import inquirer
@@ -9,9 +10,9 @@ def main():
             name="service",
             message="What service do you want to use?",
             choices=[
-                "Print current returns",
-                "Build visual dashboard",
-                "Export tax report",
+                "Display portfolio standings in terminal",
+                "Build visual dashboard using streamlit",
+                "Export tax report as pdf",
             ],
         )
     ]
@@ -23,7 +24,12 @@ def main():
         sys.exit()
 
     selected_service = answer["service"]
-    print(f"You selected: {selected_service}")
+    if selected_service == "Display portfolio standings in terminal":
+        process = subprocess.Popen([sys.executable, "services/terminal/main.py"])
+        process.wait()  # Wait until process ended
+
+    else:
+        print("Not implemented yet ;)")
 
 
 if __name__ == "__main__":

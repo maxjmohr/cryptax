@@ -1,6 +1,6 @@
 [project]
 name = "cryptax"
-version = "0.3.0"
+version = "0.4.0"
 description = "Make tax auditors love crpyto."
 readme = "README.md"
 requires-python = ">=3.14"
@@ -14,3 +14,7 @@ dependencies = [
     "textual>=6.6.0",
     "xlsxwriter>=3.2.9",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend", "services"]
