@@ -58,18 +58,12 @@ else
 fi
 
 # Setup Python virtual environment and dependencies
-if [[ ! -d .venv ]]; then
-    echo "ℹ️ INF: Creating virtual environment with uv..."
-    uv venv .venv
-    echo "✅ SUC: Created virtual environment"
-fi
+echo "ℹ️ INF: Setting up virtual environment with uv..."
+uv sync
+echo "✅ SUC: Setup virtual environment"
 
 # Activate virtual environment
 source .venv/bin/activate
-
-# Install dependencies from pyproject.toml
-echo "ℹ️ INF: Installing dependencies from pyproject.toml file..."
-uv pip install --upgrade .
 
 # Start the application
 echo
