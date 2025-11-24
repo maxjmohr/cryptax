@@ -57,19 +57,9 @@ else
     echo "✅ SUC: uv is already installed"
 fi
 
-# Setup Python virtual environment and dependencies
-if [[ ! -d .venv ]]; then
-    echo "ℹ️ INF: Creating virtual environment with uv..."
-    uv venv .venv
-    echo "✅ SUC: Created virtual environment"
-fi
-
-# Activate virtual environment
-source .venv/bin/activate
-
-# Install dependencies from pyproject.toml
-echo "ℹ️ INF: Installing dependencies from pyproject.toml file..."
-uv pip install --upgrade .
+# Sync virtual environment and dependencies
+echo "ℹ️ INF: Syncing virtual environment and dependencies..."
+uv sync
 
 # Start the application
 echo
