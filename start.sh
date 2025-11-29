@@ -62,9 +62,6 @@ echo "ℹ️ INF: Setting up virtual environment with uv..."
 uv sync
 echo "✅ SUC: Setup virtual environment"
 
-# Activate virtual environment
-source .venv/bin/activate
-
 # Start the application
 echo
 echo "ℹ️ INF: Starting the application..."
