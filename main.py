@@ -24,8 +24,14 @@ def main():
         sys.exit()
 
     selected_service = answer["service"]
+    # If terminal
     if selected_service == "Display portfolio standings in terminal":
         process = subprocess.Popen([sys.executable, "services/terminal/main.py"])
+        process.wait()  # Wait until process ended
+
+    # If pdf tax report
+    elif selected_service == "Export tax report as pdf":
+        process = subprocess.Popen([sys.executable, "services/tax_report/main.py"])
         process.wait()  # Wait until process ended
 
     else:

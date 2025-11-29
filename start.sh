@@ -60,6 +60,7 @@ fi
 # Sync virtual environment and dependencies
 echo "ℹ️ INF: Syncing virtual environment and dependencies..."
 uv sync
+echo "✅ SUC: Setup virtual environment"
 
 # Start the application
 echo
