@@ -57,8 +57,8 @@ else
     echo "✅ SUC: uv is already installed"
 fi
 
-# Setup Python virtual environment and dependencies
-echo "ℹ️ INF: Setting up virtual environment with uv..."
+# Sync virtual environment and dependencies
+echo "ℹ️ INF: Syncing virtual environment and dependencies..."
 uv sync
 echo "✅ SUC: Setup virtual environment"
 
