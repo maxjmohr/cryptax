@@ -1,7 +1,12 @@
-from fpdf import FPDF
+from taxreport import TaxReport
 
-pdf = FPDF()
-pdf.add_page()
-pdf.set_font("helvetica", size=12)
-pdf.cell(text="hello world")
-pdf.output("hello_world.pdf")
+
+def main() -> None:
+    """Build pdf tax report with all relevant sections"""
+    # Build tax report
+    report = TaxReport()
+    report.output_pdf()
+
+
+if __name__ == "__main__":
+    main()
