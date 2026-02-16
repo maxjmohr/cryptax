@@ -29,6 +29,14 @@ def main():
         process = subprocess.Popen([sys.executable, "services/terminal/main.py"])
         process.wait()  # Wait until process ended
 
+    # If dashboard
+    elif selected_service == "Build visual dashboard using streamlit":
+        # Needs to execute streamlit run services/dashboard/main.py
+        process = subprocess.Popen(
+            [sys.executable, "-m", "streamlit", "run", "services/dashboard/main.py"]
+        )
+        process.wait()  # Wait until process ended
+
     # If pdf tax report
     elif selected_service == "Export tax report as pdf":
         process = subprocess.Popen([sys.executable, "services/tax_report/main.py"])
