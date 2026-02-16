@@ -9,6 +9,7 @@ dependencies = [
     "fpdf2>=2.8.5",
     "inquirer>=3.4.1",
     "numpy>=2.3.5",
+    "plotly>=6.5.2",
     "polars>=1.35.2",
     "progress>=1.6.1",
     "requests>=2.32.5",

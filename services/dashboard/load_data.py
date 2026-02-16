@@ -9,6 +9,7 @@ import streamlit as st
 from backend.portfolio import Portfolio
 
 
+@st.cache_data(ttl="1d", show_spinner="Loaading portfolio...", show_time=True)
 def load_portfolio() -> None:
     """Load current portfolio with values into session"""
     # Get current portfolio and prices
@@ -45,3 +46,4 @@ def load_portfolio() -> None:
 
     # Store portfolio df
     st.session_state.portfolio_df = portfolio.df
+    st.write(st.session_state.portfolio_df)
