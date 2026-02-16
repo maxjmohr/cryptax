@@ -1,15 +1,18 @@
 import plotly.express as px
+import polars as pl
 import streamlit as st
 
 
 def display_pie_chart_all_coins() -> None:
     """Draw a pie chart of all coins in the portfolio."""
     st.subheader(
-        "Distribution of all your holdings",
+        "Distribution of your holdings",
         help="Hover over each slice to see more details on current worth and share of total portfolio.",
     )
 
-    df = st.session_state.portfolio_df
+    df = st.session_state.portfolio_df.filter(
+        pl.col("Coin").is_in(st.session_state.filtered_coins)
+    )
 
     # Always-dark mode
     text_color = "#FFFFFF"
@@ -41,10 +44,7 @@ def display_pie_chart_all_coins() -> None:
         paper_bgcolor="rgba(0,0,0,0)",  # transparent (adapts to Streamlit theme)
         plot_bgcolor="rgba(0,0,0,0)",  # transparent (adapts to Streamlit theme)
         font=dict(color=text_color),
-        legend=dict(
-            title="Coins",
-            font=dict(color=text_color),
-        ),
+        showlegend=False,
         hoverlabel=dict(
             bgcolor="#111827",
             font_color="#FFFFFF",
